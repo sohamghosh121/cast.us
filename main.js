@@ -18,8 +18,8 @@ var firebaseDb = firebaseApp.database();
 
 
 // Connection URL
-// var url = 'mongodb://heroku_vvz02rlh:n2udpq1n4vee6d7t24087cuvpd@ds019796.mlab.com:19796/heroku_vvz02rlh';
-var url = 'localhost:27017/castdotus'
+var url = 'mongodb://heroku_vvz02rlh:n2udpq1n4vee6d7t24087cuvpd@ds019796.mlab.com:19796/heroku_vvz02rlh';
+// var url = 'localhost:27017/castdotus'
 // Use connect method to connect to the Server
 
 var monk = require('monk');
