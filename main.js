@@ -95,15 +95,21 @@ app.use(function(req,res,next){
     next();
 });
 
+app.get('/healthCheck', function(req, res){
+  res.send('All good!');
+})
+
 app.get('/register', function(req, res){
+  var users = req.db.get('users');
   var userId = req.query.fb_id;
   var deviceId = req.query.device_id;
   var name = req.query.name;
-  req.db.insert({
+  users.insert({
     fbId: userId,
     deviceId: deviceId,
     name: name
   })
+  res.send('Registered');
 
 });
 
