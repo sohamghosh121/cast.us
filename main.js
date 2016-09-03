@@ -23,7 +23,7 @@ var url = 'mongodb://heroku_vvz02rlh:n2udpq1n4vee6d7t24087cuvpd@ds019796.mlab.co
 // Use connect method to connect to the Server
 
 var monk = require('monk');
-var db = monk('localhost:27017/castdotus');
+var db = monk(url);
 
 // HTTP requests and API stuff
 
