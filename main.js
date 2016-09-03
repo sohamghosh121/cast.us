@@ -149,7 +149,7 @@ app.get('/request_switch', function(req, res){
       res.send('Request sent');
       sendRequestStreamNotification(user.deviceId, requester.name, requester.liveVideo.streamUrl, requester.liveVideo.videoId);
     });
-    users.find({fbId: fbId, 'liveVideos.acceptedStreamers': {$elemMatch: {$eq: requesteeFbId}}}, function(e, requester){
+    users.find({fbId: fbId, 'liveVideos.acceptedStreamers': requesteeFbId}}}, function(e, requester){
       // if he has already accepted before, change the current streamer in firebase, listener should work
       res.send('Switched stream');
       firebaseDb.ref('liveVideos/' + requester.liveVideo.videoId).set({'currentStreamer': user.fbId});
