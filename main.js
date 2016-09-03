@@ -111,7 +111,7 @@ app.get('/create', function(req, res){
   var userId = req.query.fb_id;
   var accessToken = req.query.access_token;
   var users = req.db.get('users');
-  users.update({fbId: userId}, {$set: {accessToken: accessToken}});
+  users.update({fbId: userId}, {$set: {accessToken: accessToken}}, {$upsert: true});
 
   request.post({
     url: API_URL + '/' + userId + '/live_videos',
