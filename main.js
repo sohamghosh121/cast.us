@@ -47,7 +47,7 @@ var sendRequestStreamNotification = function(requesterDeviceId, requesterName, r
       collapse_key: 'cast.us',
       notification: {
         title: 'cast.us request',
-        body: requesterName + ' wants you to stream to their live video!'
+        body: requesterName + ' wants you to stream to their live video!|' + rmtpUrl + '|' + liveVideoId
       },
       data: {
         rmtp_url: rmtpUrl, // for android to note whats the rmtp url
