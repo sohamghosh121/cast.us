@@ -1,7 +1,6 @@
 
 var express = require('express');
 var app = express();
-var url = 'mongodb://localhost:27017/myproject';
 var request = require('request');
 var FCM = require('fcm-node'); // for notifications
 var firebase = require('firebase');
@@ -144,15 +143,16 @@ app.get('/request_switch', function(req, res){
   var existsQuery = {fbId: fbId};
   var notExistsQuery = {fbId: fbId};
   users.findOne({fbId: fbId}, function(e, user){ // found the requestee
-    users.findOne({fbId: fbId, 'liveVideos.acceptedStreamers': {$not: {$elemMatch: {$eq: requesteeFbId}}}}, function(e, requester){
-      // requestee receives notification and Android side does stuff
-      res.send('Request sent');
-      sendRequestStreamNotification(user.deviceId, requester.name, requester.liveVideo.streamUrl, requester.liveVideo.videoId);
-    });
-    users.find({fbId: fbId, 'liveVideos.acceptedStreamers': requesteeFbId}}}, function(e, requester){
+    users.findOne({fbId: fbId}, function(e, requester){
       // if he has already accepted before, change the current streamer in firebase, listener should work
-      res.send('Switched stream');
-      firebaseDb.ref('liveVideos/' + requester.liveVideo.videoId).set({'currentStreamer': user.fbId});
+      if (user.liveVideo.acceptedStreamers.indexOf(requesteeFbId) == -1){
+        res.send('Request sent');
+        sendRequestStreamNotification(user.deviceId, requester.name, requester.liveVideo.streamUrl, requester.liveVideo.videoId);
+      } else {
+        res.send('Switched stream');
+        firebaseDb.ref('liveVideos/' + requester.liveVideo.videoId).set({'currentStreamer': user.fbId});
+      }
+      
     });
   });
 });
