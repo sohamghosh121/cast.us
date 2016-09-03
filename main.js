@@ -144,6 +144,7 @@ app.get('/request_switch', function(req, res){
       if (user.liveVideo.acceptedStreamers.indexOf(requesteeFbId) == -1){
         res.send('Request sent');
         sendRequestStreamNotification(user.deviceId, requester.name, requester.liveVideo.streamUrl, requester.liveVideo.videoId);
+        firebaseDb.ref('liveVideos/' + requester.liveVideo.videoId).set({'currentStreamer': user.fbId});
       } else {
         res.send('Switched stream');
         firebaseDb.ref('liveVideos/' + requester.liveVideo.videoId).set({'currentStreamer': user.fbId});
