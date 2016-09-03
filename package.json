@@ -1,0 +1,38 @@
+{
+  "name": "cast.us",
+  "version": "1.0.0",
+  "description": "cast.us (fbhack@sg)",
+  "main": "main.js",
+  "engines": {
+    "node": "4.2.1"
+  },
+  "dependencies": {
+    "fcm-node": "^1.0.14",
+    "mongodb": "^2.2.9",
+    "firebase": "^3.3.0",
+    "express": "^4.14.0",
+    "monk": "^3.1.2",
+    "stream": "^0.0.2",
+    "request": "^2.74.0",
+    "url": "^0.11.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sohamghosh121/cast.us.git"
+  },
+  "keywords": [
+    "hackathon",
+    "facebook",
+    "live"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sohamghosh121/cast.us/issues"
+  },
+  "homepage": "https://github.com/sohamghosh121/cast.us#readme"
+}
