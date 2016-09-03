@@ -18,8 +18,8 @@ var firebaseDb = firebaseApp.database();
 
 
 // Connection URL
-var url = 'mongodb://heroku_vvz02rlh:n2udpq1n4vee6d7t24087cuvpd@ds019796.mlab.com:19796/heroku_vvz02rlh';
-// var url = 'localhost:27017/castdotus';
+// var url = 'mongodb://heroku_vvz02rlh:n2udpq1n4vee6d7t24087cuvpd@ds019796.mlab.com:19796/heroku_vvz02rlh';
+var url = 'localhost:27017/castdotus';
 // Use connect method to connect to the Server
 
 var monk = require('monk');
@@ -118,7 +118,7 @@ app.get('/create', function(req, res){
     body: 'access_token=' + accessToken
   }, function(err, response, body){
     var data = JSON.parse(response.body);
-    res.send(data);
+    
     users.update({fbId: userId}, {$set: {liveVideo: {videoId: data.id, streamUrl: data.stream_url, currentStreamer: userId, acceptedStreamers: []}}})
       .then(() => { 
         console.log('updating stuff on create');
@@ -126,12 +126,7 @@ app.get('/create', function(req, res){
           currentStreamer: userId,
           acceptedStreamers: []
         });
-        users.findOne({fbId: userId}, function(e,h){
-          if (e){ res.send({ok: false})}
-          else {
-            res.send(h.liveVideo);
-          }
-        });
+        res.send(data);
       });
   });
 });
@@ -144,7 +139,7 @@ app.get('/request_switch', function(req, res){
   var users = req.db.get('users');
   var existsQuery = {fbId: fbId};
   var notExistsQuery = {fbId: fbId};
-  users.findOne({fbId: fbId}, function(e, user){ // found the requestee
+  users.findOne({fbId: requesteeFbId}, function(e, user){ // found the requestee
     users.findOne({fbId: fbId}, function(e, requester){
       // if he has already accepted before, change the current streamer in firebase, listener should work
       if (user.liveVideo.acceptedStreamers.indexOf(requesteeFbId) == -1){
