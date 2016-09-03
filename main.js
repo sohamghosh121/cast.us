@@ -19,7 +19,8 @@ var firebaseDb = firebaseApp.database();
 
 
 // Connection URL
-var url = 'mongodb://heroku_vvz02rlh:n2udpq1n4vee6d7t24087cuvpd@ds019796.mlab.com:19796/heroku_vvz02rlh';
+// var url = 'mongodb://heroku_vvz02rlh:n2udpq1n4vee6d7t24087cuvpd@ds019796.mlab.com:19796/heroku_vvz02rlh';
+var url = 'localhost:27017/castdotus'
 // Use connect method to connect to the Server
 
 var monk = require('monk');
@@ -54,6 +55,20 @@ var sendRequestStreamNotification = function(requesterDeviceId, requesterName, r
         live_video_id: liveVideoId // for server to identify when API call made to confirm ready to stream
       }
   };
+  console.log(message);
+  sendNotification(message);
+}
+
+
+var sendAcceptedRequestNotification = function(originalDeviceId, accepterName){
+  var message = {
+    to: originalDeviceId,
+    collapse_key: 'cast.us',
+    notification: {
+      title: 'cast.us request accepted',
+      body: accepterName + ' has accepted your accept to stream!'
+    }
+  }
   sendNotification(message);
 }
 
@@ -66,27 +81,6 @@ var sendStopRequest = function(deviceId){
     }
   };
   sendNotification(message)
-}
-
-var switchStreamNotification = function(deviceId, toOriginal){ // when notif is received, android stops streaming, does cool UI stuff
-  if (toOriginal) {
-    body = 'Your friend is ready to stream. Switching to his stream now!'
-  } else {
-    body = 'The original streamer '
-  }
-  var message = {
-      to: deviceId, // registration token
-      collapse_key: 'cast.us',
-      notification: {
-        title: 'cast.us streaming',
-        body: ''
-      },
-      data: {
-        rmtp_url: rmtpUrl, // for android to note whats the rmtp url
-        live_video_id: liveVideoId // for server to identify when API call made to confirm ready to stream
-      }
-  };
-  sendNotification(message);
 }
 
 // EXPRESS stuff
@@ -110,7 +104,6 @@ app.get('/register', function(req, res){
     name: name
   })
   res.send('Registered');
-
 });
 
 
@@ -125,7 +118,8 @@ app.get('/create', function(req, res){
     body: 'access_token=' + accessToken
   }, function(err, response, body){
     var data = JSON.parse(response.body);
-    users.update({fbId: userId}, {$set: {liveVideo: {videoId: data.id, streamUrl: data.stream_url, currentStreamer: userId}}})
+    console.log(data);
+    users.update({fbId: userId}, {$set: {liveVideo: {videoId: data.id, streamUrl: data.stream_url, currentStreamer: userId, acceptedStreamers: []}}})
       .then(() => { 
         firebaseDb.ref('liveVideos/' + data.id).set({
           currentStreamer: userId,
@@ -139,29 +133,43 @@ app.get('/create', function(req, res){
         });
       });
   });
-  
-
 });
 
 // I am original streamer, request switch to my friend
 app.get('/request_switch', function(req, res){
+  // first check if the guy is already in accepted streamers
+  var requesteeFbId = String(req.query.requestee_fb_id);
+  var fbId = String(req.query.fb_id);
   var users = req.db.get('users');
-  users.find({fbId: req.query.requestee_fb_id}, function(e, user){ // found the requestee
-    users.find({fbId: req.query.fb_id}, function(e, requester){
+  var existsQuery = {fbId: fbId};
+  var notExistsQuery = {fbId: fbId};
+  users.findOne({fbId: fbId}, function(e, user){ // found the requestee
+    users.findOne({fbId: fbId, 'liveVideos.acceptedStreamers': {$not: {$elemMatch: {$eq: requesteeFbId}}}}, function(e, requester){
       // requestee receives notification and Android side does stuff
+      res.send('Request sent');
       sendRequestStreamNotification(user.deviceId, requester.name, requester.liveVideo.streamUrl, requester.liveVideo.videoId);
-      // set listener to check when original streaming android has stopped streaming
     });
-    
+    users.find({fbId: fbId, 'liveVideos.acceptedStreamers': {$elemMatch: {$eq: requesteeFbId}}}, function(e, requester){
+      // if he has already accepted before, change the current streamer in firebase, listener should work
+      res.send('Switched stream');
+      firebaseDb.ref('liveVideos/' + requester.liveVideo.videoId).set({'currentStreamer': user.fbId});
+    });
   });
 });
 
 
 app.get('/accept_request', function(req, res){
+  var users = req.db.get('users');
   var liveVideoId = req.query.live_video_id;
   var newStreamerId = req.query.fb_id;
-  firebaseDb.ref('liveVideos/' + liveVideoId).set({'currentStreamer': newStreamerId});
-  firebaseDb.ref('liveVideos/' + liveVideoId).push();
+  users.findOneAndUpdate({'liveVideo.videoId': liveVideoId}, {$push: {'liveVideo.acceptedStreamers': newStreamerId}}).then((updatedUser) => {
+    users.find({fbId: newStreamerId}, function(e, newUser){
+      // sendAcceptedRequestNotification(user.deviceId, newUser.name);
+      firebaseDb.ref('liveVideos/' + liveVideoId).set({'currentStreamer': newStreamerId});
+      res.send('ok'); // the accepted gets this
+    });
+  });
+  
 });
 
 // I am original streamer, stop my live video, I am done
@@ -172,7 +180,12 @@ app.get('/stop_streaming', function(req, res){
   request.post({
       url: API_URL + '/' + liveVideo + '/end_live_video'
     }, function(error, response, body){
-      console.log('stopped streaming live video ' + videoId);
+      if (error){
+        res.send(error);
+      } else {
+        console.log('stopped streaming live video ' + videoId);
+        res.send('stopped streaming live video ' + videoId)
+      }
     });
   });
 });
