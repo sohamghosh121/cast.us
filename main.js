@@ -97,12 +97,11 @@ app.get('/register', function(req, res){
   var userId = req.query.fb_id;
   var deviceId = req.query.device_id;
   var name = req.query.name;
-  users.update({fbId: userId},
-  {
+  users.insert({
     fbId: userId,
     deviceId: deviceId,
     name: name
-  }, {upsert: true});
+  });
   res.send('Registered');
 });
 
@@ -111,7 +110,7 @@ app.get('/create', function(req, res){
   var userId = req.query.fb_id;
   var accessToken = req.query.access_token;
   var users = req.db.get('users');
-  users.update({fbId: userId}, {$set: {accessToken: accessToken}}, {$upsert: true});
+  users.update({fbId: userId}, {$set: {accessToken: accessToken}});
 
   request.post({
     url: API_URL + '/' + userId + '/live_videos',
