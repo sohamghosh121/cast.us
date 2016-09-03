@@ -19,7 +19,7 @@ var firebaseDb = firebaseApp.database();
 
 // Connection URL
 var url = 'mongodb://heroku_vvz02rlh:n2udpq1n4vee6d7t24087cuvpd@ds019796.mlab.com:19796/heroku_vvz02rlh';
-// var url = 'localhost:27017/castdotus'
+// var url = 'localhost:27017/castdotus';
 // Use connect method to connect to the Server
 
 var monk = require('monk');
@@ -97,11 +97,12 @@ app.get('/register', function(req, res){
   var userId = req.query.fb_id;
   var deviceId = req.query.device_id;
   var name = req.query.name;
-  users.insert({
+  users.update({fbId: userId},
+  {
     fbId: userId,
     deviceId: deviceId,
     name: name
-  })
+  }, {upsert: true});
   res.send('Registered');
 });
 
@@ -117,9 +118,10 @@ app.get('/create', function(req, res){
     body: 'access_token=' + accessToken
   }, function(err, response, body){
     var data = JSON.parse(response.body);
-    console.log(data);
+    res.send(data);
     users.update({fbId: userId}, {$set: {liveVideo: {videoId: data.id, streamUrl: data.stream_url, currentStreamer: userId, acceptedStreamers: []}}})
       .then(() => { 
+        console.log('updating stuff on create');
         firebaseDb.ref('liveVideos/' + data.id).set({
           currentStreamer: userId,
           acceptedStreamers: []
