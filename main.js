@@ -8,11 +8,11 @@ var firebase = require('firebase');
 var port = process.env.PORT || 8080;
 
 
-var serverKey = 'AIzaSyC_XOw3Q6Rp003b-_Td3EL4LIDWXFJzM8A';
+var serverKey = 'AIzaSyDJZiUhzlEajSDTywdo_9a0RubQYYrFkb4';
 var fcm = new FCM(serverKey);
 var firebaseApp = firebase.initializeApp({
-  apiKey: 'AIzaSyC_XOw3Q6Rp003b-_Td3EL4LIDWXFJzM8A',
-  databaseURL: 'https://castus-5d435.firebaseio.com/',
+  apiKey: 'AIzaSyDJZiUhzlEajSDTywdo_9a0RubQYYrFkb4',
+  databaseURL: 'https://castdotus.firebaseio.com/',
 });
 var firebaseDb = firebaseApp.database();
 
